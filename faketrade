@@ -48,6 +48,8 @@ local folder = Instance.new("Folder")
 folder.Name = NEW_FOLDER_NAME
 folder.Parent = main
 
+local destroyed = false
+
 -- ===== COPY ICON TRONG 2 -> Frame =====
 for _, icon in ipairs(frame:GetChildren()) do
 	if icon:IsA("ImageLabel") or icon:IsA("ImageButton") then
@@ -111,22 +113,24 @@ local function startCountdown()
 		task.wait(1)
 	end
 
-	-- 🔥 dừng tại 1, không đổi nữa
+	-- đứng tại 1 vĩnh viễn
 	countdownDone = true
 	counting = false
 end
 
--- ===== LOOP CHECK =====
-task.spawn(function()
-	while true do
-		-- ❌ Trade tắt → xóa toàn bộ
-		if not trade.Visible then
-			if folder and folder.Parent then
-				folder:Destroy()
-			end
-			break
+-- ===== 🔥 INSTANT: BẮT TRADE VISIBLE =====
+trade:GetPropertyChangedSignal("Visible"):Connect(function()
+	if trade.Visible == false and not destroyed then
+		destroyed = true
+		if folder and folder.Parent then
+			folder:Destroy()
 		end
+	end
+end)
 
+-- ===== LOOP READY (NHẸ – KHÔNG LIÊN QUAN VISIBLE) =====
+task.spawn(function()
+	while not destroyed do
 		local r1 = isReadyText(ready1.Text)
 		local r2 = isReadyText(ready2.Text)
 
@@ -141,7 +145,6 @@ task.spawn(function()
 			end
 		end
 
-		task.wait(0.2)
+		task.wait(0.0001)
 	end
 end)
-countdown:Destroy()
