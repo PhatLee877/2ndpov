@@ -1,0 +1,134 @@
+-- ========= CONFIG =========
+local ALLOWED_USERNAME = "datprosunshine3"
+local NEW_FOLDER_NAME = "Trade_Copy"
+-- ==========================
+
+local player = game.Players.LocalPlayer
+if player.Name ~= ALLOWED_USERNAME then
+	return
+end
+
+-- ===== GET GUI =====
+local playerGui = player:WaitForChild("PlayerGui")
+local main = playerGui:WaitForChild("Main")
+local trade = main:WaitForChild("Trade")
+
+local container = trade:WaitForChild("Container")
+local two = container:WaitForChild("2")
+local frame = two:WaitForChild("Frame")
+
+local lock2 = trade:WaitForChild("Lock2")
+local countdown = trade:WaitForChild("Countdown")
+
+local info = trade:WaitForChild("Info")
+local ready1 = info:WaitForChild("Ready1")
+local ready2 = info:WaitForChild("Ready2")
+
+-- ===== READY CHECK =====
+local function isReadyText(text)
+	if not text then return false end
+	text = string.gsub(text, "^%s+", "")
+	text = string.gsub(text, "%s+$", "")
+	return text == "Ready!"
+end
+
+-- ===== SAVE POSITION =====
+local function saveUI(ui)
+	return {
+		pos = ui.AbsolutePosition,
+		size = ui.AbsoluteSize
+	}
+end
+
+local lock2Info = saveUI(lock2)
+local countdownOffset = countdown.AbsolutePosition - two.AbsolutePosition
+
+-- ===== CREATE FOLDER =====
+local folder = Instance.new("Folder")
+folder.Name = NEW_FOLDER_NAME
+folder.Parent = main
+
+-- ===== 🔥 COPY ICON TRONG 2 -> Frame (KHÔNG COPY 2) =====
+for _, icon in ipairs(frame:GetChildren()) do
+	if icon:IsA("ImageLabel") or icon:IsA("ImageButton") then
+		-- bỏ Template
+		if not string.find(icon.Name, "Template") then
+			local clone = icon:Clone()
+			clone.Parent = folder
+
+			clone.AnchorPoint = Vector2.new(0, 0)
+			clone.Position = UDim2.fromOffset(
+				icon.AbsolutePosition.X,
+				icon.AbsolutePosition.Y
+			)
+			clone.Size = UDim2.fromOffset(
+				icon.AbsoluteSize.X,
+				icon.AbsoluteSize.Y
+			)
+
+			clone.ZIndex = icon.ZIndex
+			clone.Visible = true
+		end
+	end
+end
+
+-- ===== CLONE LOCK2 & COUNTDOWN (GIỮ NGUYÊN LOGIC CŨ) =====
+local lock2Clone = lock2:Clone()
+local countdownClone = countdown:Clone()
+
+lock2Clone.Parent = folder
+countdownClone.Parent = folder
+
+-- ===== RESTORE LOCK2 =====
+lock2Clone.AnchorPoint = Vector2.new(0, 0)
+lock2Clone.Position = UDim2.fromOffset(lock2Info.pos.X, lock2Info.pos.Y)
+lock2Clone.Size = UDim2.fromOffset(lock2Info.size.X, lock2Info.size.Y)
+lock2Clone.ZIndex = 50
+lock2Clone.Visible = false
+
+-- ===== RESTORE COUNTDOWN =====
+countdownClone.AnchorPoint = Vector2.new(0, 0)
+countdownClone.Position = UDim2.fromOffset(
+	two.AbsolutePosition.X + countdownOffset.X,
+	two.AbsolutePosition.Y + countdownOffset.Y
+)
+countdownClone.Size = UDim2.fromOffset(
+	countdown.AbsoluteSize.X,
+	countdown.AbsoluteSize.Y
+)
+countdownClone.ZIndex = 50
+countdownClone.Visible = false
+
+-- ===== COUNTDOWN LOGIC =====
+local counting = false
+local function startCountdown()
+	if counting then return end
+	counting = true
+
+	for i = 10, 1, -1 do
+		countdownClone.Text = tostring(i)
+		task.wait(1)
+	end
+
+	countdownClone.Visible = false
+	counting = false
+end
+-- ===== LOOP CHECK LIÊN TỤC =====
+task.spawn(function()
+	while true do
+		local r1 = isReadyText(ready1.Text)
+		local r2 = isReadyText(ready2.Text)
+
+		lock2Clone.Visible = r2
+
+		if r1 and r2 then
+			countdownClone.Visible = true
+			startCountdown()
+		else
+			countdownClone.Visible = false
+		end
+
+		task.wait(0.2)
+	end
+end)
+countdown:Destroy()
