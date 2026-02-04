@@ -48,10 +48,9 @@ local folder = Instance.new("Folder")
 folder.Name = NEW_FOLDER_NAME
 folder.Parent = main
 
--- ===== 🔥 COPY ICON TRONG 2 -> Frame (KHÔNG COPY 2) =====
+-- ===== COPY ICON TRONG 2 -> Frame =====
 for _, icon in ipairs(frame:GetChildren()) do
 	if icon:IsA("ImageLabel") or icon:IsA("ImageButton") then
-		-- bỏ Template
 		if not string.find(icon.Name, "Template") then
 			local clone = icon:Clone()
 			clone.Parent = folder
@@ -72,7 +71,7 @@ for _, icon in ipairs(frame:GetChildren()) do
 	end
 end
 
--- ===== CLONE LOCK2 & COUNTDOWN (GIỮ NGUYÊN LOGIC CŨ) =====
+-- ===== CLONE LOCK2 & COUNTDOWN =====
 local lock2Clone = lock2:Clone()
 local countdownClone = countdown:Clone()
 
@@ -101,8 +100,10 @@ countdownClone.Visible = false
 
 -- ===== COUNTDOWN LOGIC =====
 local counting = false
+local countdownDone = false
+
 local function startCountdown()
-	if counting then return end
+	if counting or countdownDone then return end
 	counting = true
 
 	for i = 10, 1, -1 do
@@ -110,12 +111,22 @@ local function startCountdown()
 		task.wait(1)
 	end
 
-	countdownClone.Visible = false
+	-- 🔥 dừng tại 1, không đổi nữa
+	countdownDone = true
 	counting = false
 end
--- ===== LOOP CHECK LIÊN TỤC =====
+
+-- ===== LOOP CHECK =====
 task.spawn(function()
 	while true do
+		-- ❌ Trade tắt → xóa toàn bộ
+		if not trade.Visible then
+			if folder and folder.Parent then
+				folder:Destroy()
+			end
+			break
+		end
+
 		local r1 = isReadyText(ready1.Text)
 		local r2 = isReadyText(ready2.Text)
 
@@ -125,7 +136,9 @@ task.spawn(function()
 			countdownClone.Visible = true
 			startCountdown()
 		else
-			countdownClone.Visible = false
+			if not countdownDone then
+				countdownClone.Visible = false
+			end
 		end
 
 		task.wait(0.2)
