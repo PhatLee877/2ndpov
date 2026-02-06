@@ -1,4 +1,4 @@
-
+print("Script start")
 local NEW_FOLDER_NAME = "Trade_Copy"
 -- ===== GET GUI =====
 local playerGui = player:WaitForChild("PlayerGui")
