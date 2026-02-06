@@ -1,13 +1,5 @@
--- ========= CONFIG =========
-local ALLOWED_USERNAME = "datprosunshine3"
+
 local NEW_FOLDER_NAME = "Trade_Copy"
--- ==========================
-
-local player = game.Players.LocalPlayer
-if player.Name ~= ALLOWED_USERNAME then
-	return
-end
-
 -- ===== GET GUI =====
 local playerGui = player:WaitForChild("PlayerGui")
 local main = playerGui:WaitForChild("Main")
