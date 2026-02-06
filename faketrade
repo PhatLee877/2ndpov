@@ -1,9 +1,27 @@
-print("Script start")
+print("🚀 Script start")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+if not player then
+	warn("❌ Không tìm thấy LocalPlayer")
+	return
+end
+
+task.wait()
+
 local NEW_FOLDER_NAME = "Trade_Copy"
--- ===== GET GUI =====
+
+print("🔎 Đang lấy GUI...")
+
 local playerGui = player:WaitForChild("PlayerGui")
+print("✅ PlayerGui OK")
+
 local main = playerGui:WaitForChild("Main")
+print("✅ Main OK")
+
 local trade = main:WaitForChild("Trade")
+print("✅ Trade OK")
 
 local container = trade:WaitForChild("Container")
 local two = container:WaitForChild("2")
@@ -16,6 +34,8 @@ local info = trade:WaitForChild("Info")
 local ready1 = info:WaitForChild("Ready1")
 local ready2 = info:WaitForChild("Ready2")
 
+print("✅ Tất cả GUI refs OK")
+
 -- ===== READY CHECK =====
 local function isReadyText(text)
 	if not text then return false end
@@ -26,6 +46,7 @@ end
 
 -- ===== SAVE POSITION =====
 local function saveUI(ui)
+	print("📍 Save UI:", ui.Name)
 	return {
 		pos = ui.AbsolutePosition,
 		size = ui.AbsoluteSize
@@ -36,16 +57,22 @@ local lock2Info = saveUI(lock2)
 local countdownOffset = countdown.AbsolutePosition - two.AbsolutePosition
 
 -- ===== CREATE FOLDER =====
+print("📁 Tạo folder clone")
+
 local folder = Instance.new("Folder")
 folder.Name = NEW_FOLDER_NAME
 folder.Parent = main
 
 local destroyed = false
 
--- ===== COPY ICON TRONG 2 -> Frame =====
+-- ===== COPY ICON =====
+print("🧬 Clone icon...")
+
 for _, icon in ipairs(frame:GetChildren()) do
 	if icon:IsA("ImageLabel") or icon:IsA("ImageButton") then
 		if not string.find(icon.Name, "Template") then
+			print("➡️ Clone:", icon.Name)
+
 			local clone = icon:Clone()
 			clone.Parent = folder
 
@@ -66,20 +93,20 @@ for _, icon in ipairs(frame:GetChildren()) do
 end
 
 -- ===== CLONE LOCK2 & COUNTDOWN =====
+print("🔐 Clone Lock2 & Countdown")
+
 local lock2Clone = lock2:Clone()
 local countdownClone = countdown:Clone()
 
 lock2Clone.Parent = folder
 countdownClone.Parent = folder
 
--- ===== RESTORE LOCK2 =====
 lock2Clone.AnchorPoint = Vector2.new(0, 0)
 lock2Clone.Position = UDim2.fromOffset(lock2Info.pos.X, lock2Info.pos.Y)
 lock2Clone.Size = UDim2.fromOffset(lock2Info.size.X, lock2Info.size.Y)
 lock2Clone.ZIndex = 50
 lock2Clone.Visible = false
 
--- ===== RESTORE COUNTDOWN =====
 countdownClone.AnchorPoint = Vector2.new(0, 0)
 countdownClone.Position = UDim2.fromOffset(
 	two.AbsolutePosition.X + countdownOffset.X,
@@ -98,37 +125,61 @@ local countdownDone = false
 
 local function startCountdown()
 	if counting or countdownDone then return end
+
+	print("⏳ Bắt đầu countdown")
+
 	counting = true
 
 	for i = 10, 1, -1 do
-		countdownClone.Text = tostring(i)
+		print("⏱️ Countdown:", i)
+
+		if countdownClone:IsA("TextLabel") or countdownClone:IsA("TextButton") then
+			countdownClone.Text = tostring(i)
+		else
+			warn("❌ Countdown không phải TextLabel")
+		end
+
 		task.wait(1)
 	end
 
-	-- đứng tại 1 vĩnh viễn
+	print("✅ Countdown xong")
+
 	countdownDone = true
 	counting = false
 end
 
--- ===== 🔥 INSTANT: BẮT TRADE VISIBLE =====
+-- ===== TRADE VISIBLE =====
 trade:GetPropertyChangedSignal("Visible"):Connect(function()
+	print("👁️ Trade Visible changed:", trade.Visible)
+
 	if trade.Visible == false and not destroyed then
+		print("🧹 Xoá folder clone")
+
 		destroyed = true
+
 		if folder and folder.Parent then
 			folder:Destroy()
 		end
 	end
 end)
 
--- ===== LOOP READY (NHẸ – KHÔNG LIÊN QUAN VISIBLE) =====
+-- ===== LOOP READY =====
 task.spawn(function()
+	print("🔁 Ready loop start")
+
 	while not destroyed do
 		local r1 = isReadyText(ready1.Text)
 		local r2 = isReadyText(ready2.Text)
 
+		if r1 or r2 then
+			print("📊 Ready status:", r1, r2)
+		end
+
 		lock2Clone.Visible = r2
 
 		if r1 and r2 then
+			print("🔥 Cả 2 ready")
+
 			countdownClone.Visible = true
 			startCountdown()
 		else
@@ -137,6 +188,10 @@ task.spawn(function()
 			end
 		end
 
-		task.wait(0.0001)
+		task.wait(0.05)
 	end
+
+	print("🛑 Loop dừng")
 end)
+
+print("✅ Script loaded hoàn tất")
