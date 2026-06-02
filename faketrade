@@ -177,11 +177,10 @@ task.spawn(function()
 		end
 
 		lock2Clone.Visible = r2
-        lock1.Visible = not (r1 and r2)
 
 		if r1 and r2 then
 			print("🔥 Cả 2 ready")
-
+            lock1.Visible = false
 			countdownClone.Visible = true
 			startCountdown()
 		else
