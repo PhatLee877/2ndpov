@@ -28,6 +28,7 @@ local two = container:WaitForChild("2")
 local frame = two:WaitForChild("Frame")
 
 local lock2 = trade:WaitForChild("Lock2")
+local lock1 = trade:WaitForChild("Lock1")
 local countdown = trade:WaitForChild("Countdown")
 
 local info = trade:WaitForChild("Info")
@@ -176,6 +177,7 @@ task.spawn(function()
 		end
 
 		lock2Clone.Visible = r2
+        lock1.Visible = not (r1 and r2)
 
 		if r1 and r2 then
 			print("🔥 Cả 2 ready")
